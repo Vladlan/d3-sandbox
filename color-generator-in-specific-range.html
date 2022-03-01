@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Color Generator</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+      }
+      .square {
+        width: 50px;
+        height: 50px;
+        margin: 1px;
+      }
+      .color1 {
+        background-color: rgb(245, 242, 212);
+      }
+      .color2 {
+        background-color: rgb(149, 208, 204);
+      }
+      .color3 {
+        background-color: rgb(86, 132, 171);
+      }
+      .color4 {
+        background-color: rgb(33, 88, 127);
+      }
+      .squares-wrapper {
+          display: flex;
+          flex-wrap: wrap;
+          flex-direction: row;
+      }
+    </style>
+  </head>
+  <body>
+      <h2>
+          Color palette
+      </h1>
+    <div class="squares-wrapper">
+      <div class="square color1"></div>
+      <div class="square color2"></div>
+      <div class="square color3"></div>
+      <div class="square color4"></div>
+    </div>
+    <h2>
+        Generated colors
+    </h1>
+    <div class="squares-wrapper" id="generated-colors"></div>
+    <script type="application/javascript">
+      function generateRandom(min = 0, max = 100) {
+        const difference = max - min;
+        let rand = Math.random();
+        rand = Math.floor(rand * difference);
+        rand = rand + min;
+        return rand;
+      }
+      const r = () => (Math.random() * 256) >> 0;
+      const color = `rgb(${r()}, ${r()}, ${r()})`;
+
+      function createdColoredSquare(color) {
+        const div = document.createElement("div");
+        div.classList.add("square");
+        div.style.backgroundColor = color;
+        return div;
+      }
+
+      function insertColoredSquare(color) {
+        const div = createdColoredSquare(color);
+        document.getElementById("generated-colors").appendChild(div);
+      }
+
+      const COLOR_SCHEMES = [
+        [245, 242, 212],
+        [149, 208, 204],
+        [86, 132, 171],
+        [33, 88, 127],
+      ];
+
+      const ABSOLUTE_RANGE = 60;
+      const getRangeForRgbPart = (rgbPart) => {
+        const min = rgbPart - ABSOLUTE_RANGE;
+        const max = rgbPart + ABSOLUTE_RANGE;
+        return [min < 0 ? 0 : min, max > 255 ? 255 : max];
+      };
+
+      function generateRandomColorsFromColorSchemes(colorSchemes, colorsAmount) {
+        const colors = [];
+        let j = 0;
+        for (let i = 0; i < colorsAmount; i++) {
+          const colorScheme = colorSchemes[j];
+          if (j >= colorSchemes.length - 1) {
+            j = 0;
+          } else {
+            j++;
+          }
+          const [rMin, rMax] = getRangeForRgbPart(colorScheme[0]);
+          const [gMin, gMax] = getRangeForRgbPart(colorScheme[1]);
+          const [bMin, bMax] = getRangeForRgbPart(colorScheme[2]);
+          colors.push(
+            `rgb(
+                ${generateRandom(rMin, rMax)}, 
+                ${generateRandom(gMin, gMax)}, 
+                ${generateRandom(bMin, bMax)},
+            )`
+          );
+        }
+        return colors;
+      }
+
+      function generateUniqueColorsFromColorScheme(colorSchemes, newColorSchemeStep = 5) {
+        const colors = [];
+        const cache = {};
+        const availableColorsForScheme = ABSOLUTE_RANGE / newColorSchemeStep;
+        const colorsMax = availableColorsForScheme * colorSchemes.length;
+        const colorsLimit = colorsMax;
+        let j = 0;
+        for (let i = 0; i < colorsLimit; i++) {
+          const colorScheme = colorSchemes[j];
+          if (j >= colorSchemes.length - 1) {
+            j = 0;
+          } else {
+            j++;
+          }
+          if (!cache[j]) {
+            const [rMin, rMax] = getRangeForRgbPart(colorScheme[0]);
+            const [gMin, gMax] = getRangeForRgbPart(colorScheme[1]);
+            const [bMin, bMax] = getRangeForRgbPart(colorScheme[2]);
+            cache[j] = {
+                rMin, rMax, gMin, gMax, bMin, bMax,
+            };
+          }
+          if (cache[j].rMin <= cache[j].rMax) {
+            colors.push(`rgb(${cache[j].rMin}, ${cache[j].gMin}, ${cache[j].bMin})`);
+            cache[j].rMin = cache[j].rMin - newColorSchemeStep;
+            cache[j].gMin = cache[j].gMin + newColorSchemeStep;
+            cache[j].bMin = cache[j].bMin + newColorSchemeStep;
+          } else {
+              break;
+          }
+        }
+        console.log(colors);
+        return colors;
+      }
+
+      const colors = generateUniqueColorsFromColorScheme(COLOR_SCHEMES, 15);
+      colors.forEach((color) => insertColoredSquare(color));
+    </script>
+  </body>
+</html>

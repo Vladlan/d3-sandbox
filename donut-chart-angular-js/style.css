@@ -1,0 +1,50 @@
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: relative;
+  }
+  
+  .center-label, .legend {
+    text-anchor: middle;
+    alignment-baseline: middle;
+    pointer-events: none;
+    alignment-baseline: initial;
+  }
+  
+  .center-label .center-value {
+    font-size: 32px;
+    fill: #666;  
+  }
+  
+  .center-label .center-text, .legend .percentage, .legend .revenue {
+    font-size: 14px;
+    fill: #666;
+  }
+  
+  ul.campaign-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  ul.campaign-list li .campaign-legend {
+    display: inline-block;
+    width: 10px;
+    height :10px;
+    border-radius: 100%;
+    margin-right: 10px;
+  }
+  
+  ul.campaign-list li {
+    color: #3967AC;
+    padding: 20px;
+  }
+  
+  ul.campaign-list li:nth-child(odd) {
+    background-color: #f5f5f5;
+  }
+  
+  ul.campaign-list li.selected, ul.campaign-list li:hover {
+     text-decoration: underline;
+     background-color: #E1F4FE !important;
+     cursor: pointer;
+  }

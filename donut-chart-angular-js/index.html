@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+  <head>
+    <!-- Third Party Scripts -->
+    <!-- <script src="http://d3js.org/d3.v3.min.js"></script> -->
+    <!-- <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.js"></script> -->
+
+    <!-- Application script -->
+    <script src="./angular.js"></script>
+    <script src="./d3.v3.min.js"></script>
+    
+    <script src="./app.js"></script>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <div ng-controller="MainCtrl" class="container">
+      <donut-chart></donut-chart>
+      <ul class="campaign-list">
+        <li
+          ng-repeat="campaign in chartData.topDimensionMix"
+          class="campaign"
+          data-campaignId="{{campaign.scopeId}}"
+          ng-mouseover="hoverIn(campaign.scopeId)"
+          ng-mouseleave="hoverOut(campaign.scopeId)"
+        >
+          <span
+            class="campaign-legend"
+            ng-style="{ 'background-color': color[$index] }"
+          ></span>
+          {{ campaign.scopeName }}
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>
