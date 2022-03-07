@@ -155,7 +155,7 @@
 					})
 					.text(config.labelFormat);
 
-					
+
 				// Here we are adding the pointer to the gauge
 				const lineData = [
 					[config.pointerWidth / 2, 0],
@@ -165,12 +165,12 @@
 					[config.pointerWidth / 2, 0]
 				];
 				const pointerLine = d3.svg.line().interpolate('monotone');
+
 				const pg = svg
 					.append('g')
 					.data([lineData])
 					.attr('class', 'pointer')
 					.attr('transform', centerTx);
-
 				pointer = pg
 					.append('path')
 					.attr('d', pointerLine/*function(d) { return pointerLine(d) +'Z';}*/)
