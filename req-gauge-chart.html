@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script data-require="d3@4.0.0" data-semver="4.0.0" src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        .pie {
+            margin: 20px;
+        }
+
+        .pie text {
+            font-family: "Verdana";
+            fill: #888;
+        }
+
+        .pie .name-text {
+            font-size: 1em;
+        }
+
+        .pie .value-text {
+            font-size: 3em;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="chart"></div>
+    <script>
+        const data = [
+            80, 20
+        ];
+        const width = 260;
+        const height = 260;
+        const thickness = 40;
+        const thickness1 = 20;
+        const thickness2 = 20;
+        const duration = 0;
+
+        const radius = Math.min(width, height) / 2;
+        const color = d3.scaleOrdinal(d3.schemeCategory20);
+
+        const anglesRange = 0.5 * Math.PI;
+
+        const svg = d3
+            .select("#chart")
+            .append('svg')
+            .attr('class', 'pie')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg
+            .append('g')
+            .attr('transform', `translate(${(width / 2)}, ${(height / 2)})`);
+
+        const arc = d3
+            .arc()
+            .innerRadius(radius - thickness)
+            .outerRadius(radius);
+        const arc1 = d3
+            .arc()
+            .innerRadius(radius - thickness1)
+            .outerRadius(radius);
+
+        const pie = d3
+            .pie()
+            .value(function (d) { return d; })
+            .sort(null)
+            .startAngle(anglesRange * -1)
+            .endAngle(anglesRange);
+
+        const path = g
+            .selectAll('path')
+            .data(pie(data))
+            .enter()
+            .append("g")
+            .append('path')
+            .attr('d', arc)
+            .attr('fill', (d, i) => color(i))
+            .each(function (d, i) { this._current = i; });
+
+        const path1 = g
+            .selectAll('path')
+            .data(pie(data))
+            .enter()
+            .append("g")
+            .append('path')
+            .attr('d', arc1)
+            .attr('fill', (d, i) => color(i))
+            .each(function (d, i) { this._current = i; });
+
+        // ADDING BASE LABEL
+        g.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dy', '-1em')
+            .text('80%');
+    </script>
+</body>
+
+</html>
