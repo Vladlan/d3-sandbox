@@ -73,7 +73,7 @@
 
 <body>
 	<div class="gauge-container">
-		<div class="power-gauge" data-value="20" data-ticks="[30, 75]" data-target="75"></div>
+		<div class="power-gauge" data-value="20" data-ticks="[30, 75]" data-target="90"></div>
 		<span class="text-muted"></span>
 	</div>
 	<!-- <div class="gauge-container">
@@ -81,6 +81,14 @@
 		<span class="text-muted"></span>
 	</div> -->
 	<script>
+		function deg2rad(deg) {
+			return deg * Math.PI / 180;
+		}
+
+		function centerTranslation(r) {
+			return 'translate(' + r + ',' + r + ')';
+		}
+
 		const gauge = function (container, configuration) {
 			const that = {};
 			const config = {
@@ -131,10 +139,6 @@
 
 			const donut = d3.pie();
 
-			function deg2rad(deg) {
-				return deg * Math.PI / 180;
-			}
-
 			function newAngle(d) {
 				const ratio = scale(d);
 				const newAngle = config.minAngle + (ratio * range);
@@ -170,10 +174,6 @@
 			}
 			that.configure = configure;
 
-			function centerTranslation() {
-				return 'translate(' + r + ',' + r + ')';
-			}
-
 			function isRendered() {
 				return (svg !== undefined);
 			}
@@ -190,7 +190,7 @@
 
 				svg.call(tip);
 
-				const centerTx = centerTranslation();
+				const centerTx = centerTranslation(r);
 				const arcs = svg
 					.append('g')
 					.attr('class', 'arc')
@@ -206,6 +206,56 @@
 						return config.arcColorFn(i);
 					})
 					.attr('d', arc);
+
+
+
+				const width = 200;
+				const height = 200;
+				const innerRadius = 0.3;
+				const outerRadius = 0.6;
+				const labelsRadius = 0.65;
+				const radius = Math.min(width, height) / 2;
+				const rawData = [2222, 33333];
+				const pie = d3
+					.pie()
+					.sort(null) // Do not sort group by size
+					.value((d) => {
+						return d.value;
+					});
+				const dataReady = pie(rawData);
+
+				// The arc generator
+				const arcMain = d3
+					.arc()
+					.innerRadius(radius * innerRadius) // This is the size of the donut hole
+					.outerRadius(radius * outerRadius);
+
+				// Another arc that won't be drawn. Just for labels positioning
+				const outerArc = d3
+					.arc()
+					.innerRadius(radius * labelsRadius)
+					.outerRadius(radius * labelsRadius);
+
+				svg
+					.selectAll('allPolylines')
+					.data(dataReady)
+					.enter()
+					.append('polyline')
+					.attr('stroke', '#041c2c')
+					.style('fill', 'none')
+					.attr('stroke-width', 1)
+					.attr('points', (d) => {
+						const posA = arcMain.centroid(d); // line insertion in the slice
+						const posB = outerArc.centroid(d); // line break: we use the other arc generator that has been built only for that
+						const posC = outerArc.centroid(d); // Label position = almost the same as posB
+						const midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+						// we need the angle to see if the X position will be at the extreme right or extreme left
+						// multiply by 1 or -1 to put it on the right or on the left
+						posC[0] = radius * (labelsRadius + 0.05) * (midangle < Math.PI ? 1 : -1);
+						console.log('[posA, posB, posC]: ', [posA, posB, posC]);
+						// return  [posA, posB, posC];
+						return [[0, 100], [-100, -200], [200, 300]];
+					});
 
 				// CREATING GAUGE NUMERIC POINTS
 				const lg = svg.append('g')
@@ -226,6 +276,8 @@
 					})
 					.text(config.labelFormat);
 
+				const textes = lg.selectAll('text');
+				console.log('textes: ', textes);
 
 
 
@@ -237,27 +289,31 @@
 					[0, config.pointerTailLength],
 					[config.pointerWidth / 2, 0]
 				];
-				const targetData = [
-					[0, config.labelInset - r],
-					[-config.pointerWidth / 2, config.labelInset - r - (config.pointerWidth / 2)],
-					[config.pointerWidth / 2, config.labelInset - r - (config.pointerWidth / 2)]
-				];
 				const pointerLine = d3.line().curve(d3.curveMonotoneX);
 				const pg = svg.append('g')
 					.attr('class', 'pointer')
 					.attr('transform', centerTx);
 				pointer = pg.append('path')
 					.attr('d', pointerLine(lineData)/*function(d) { return pointerLine(d) +'Z';}*/)
-					.attr('transform', 'rotate(' + config.minAngle + ')')
-					.on('mouseover', tip.show)
-					.on('mouseout', tip.hide);
-				pg.append('path')
-					.attr("class", "target")
-					.attr('d', pointerLine(targetData)/*function(d) { return pointerLine(d) +'Z';}*/)
-					.attr('transform', 'rotate(' + config.minAngle + ')')
+					.attr('transform', `rotate(${config.minAngle})`)
 					.on('mouseover', tip.show)
 					.on('mouseout', tip.hide);
 
+				console.log('r: ', r);
+				console.log('config.labelInset: ', config.labelInset);
+				// CREATING TARGET TICK
+				const targetData = [
+					[0, config.labelInset - r + 10],
+					[-config.pointerWidth / 2, config.labelInset - r + 5 - (config.pointerWidth / 2)],
+					[config.pointerWidth / 2, config.labelInset - r + 5 - (config.pointerWidth / 2)]
+				];
+				console.log('targetData: ', targetData);
+				pg.append('path')
+					.attr("class", "target")
+					.attr('d', pointerLine(targetData)/*function(d) { return pointerLine(d) +'Z';}*/)
+					.attr('transform', `rotate(${config.minAngle})`)
+					.on('mouseover', tip.show)
+					.on('mouseout', tip.hide);
 				update();
 			}
 
@@ -278,7 +334,7 @@
 					.attr('transform', function (d) {
 						const ratio = scale(d.value);
 						const newAngle = config.minAngle + (ratio * range);
-						return 'rotate(' + newAngle + ')';
+						return `rotate(${newAngle})`;
 					});
 
 				gauges
@@ -286,13 +342,11 @@
 					.attr('transform', function (d) {
 						const ratio = scale(d.target);
 						const newAngle = config.minAngle + (ratio * range);
-						return 'rotate(' + newAngle + ')';
+						return `rotate(${newAngle})`;
 					});;
 			}
 			that.update = update;
-
 			configure(configuration);
-
 			return that;
 		};
 	</script>

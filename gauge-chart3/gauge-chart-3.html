@@ -1,0 +1,150 @@
+<!-- saved from url=(0102)https://www.demo2s.com/javascript/javascript-d3.js-show-color-thresholds-in-c3.js-gauge-demo-2cd9e.htm -->
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>c3.js gauge draw thresholds</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript" src="./gauge-chart-3_files/d3.v3.js"></script>
+  <link rel="stylesheet" type="text/css" href="./gauge-chart-3_files/c3.min.css">
+  <script type="text/javascript" src="./gauge-chart-3_files/c3.min.js"></script>
+  <style id="compiled-css" type="text/css">
+    #chart {
+      width: 100%;
+      min-height: 300px;
+    }
+    .mytxt {
+      font-size: 12pt;
+    }
+  </style>
+</head>
+
+<body>
+  <svg id="chart" class="c3" style="max-height: 300px; position: relative;">
+  </svg>
+  <script type="text/javascript">
+    var chart;
+    var thresholdOpts = {
+      boxSize: 14,
+      boxFill: false,
+      strokeWidth: 2,
+    };
+    var opts = {
+      bindto: "#chart",
+      data: {
+        columns: [
+          ['data', 70]
+        ],
+        type: 'gauge',
+      },
+      padding: {
+        top: 10,
+      },
+      legend: {
+        show: true
+      },
+      gauge: {
+      },
+      color: {
+        pattern: ['yellow', 'orange', 'red', 'purple'],
+        threshold: {
+          values: [24, 60, 80]
+        }
+      },
+      onrendered: function () {
+        console.log("onrendered", this);
+        drawThresholds(this, thresholdOpts, opts);
+      }
+    };
+    chart = c3.generate(opts);
+    function drawThresholds(chart, thOpts, chOpts) {
+      d3.selectAll("line.myline").remove();
+      d3.selectAll("rect.myrect").remove();
+      d3.selectAll("text.mytxt").remove();
+      var radius = chart.radius,
+        iradius = chart.innerRadius;
+      for (var i in chOpts.color.threshold.values) {
+        var v = chOpts.color.threshold.values[i];
+        var col = chOpts.color.pattern[parseInt(i) + 1];
+        var angle = Math.PI * v / 100;
+        var x0 = (iradius * Math.cos(angle));
+        var y0 = (iradius * Math.sin(angle));
+        var x1 = (radius * Math.cos(angle));
+        var y1 = (radius * Math.sin(angle));
+        d3.select(".c3-chart-arcs").append("line")
+          .attr({
+            x1: -x0,
+            y1: -y0,
+            x2: -x1,
+            y2: -y1
+          })
+          .attr('class', 'myline')
+          .style("stroke-width", thOpts.strokeWidth)
+          .style("stroke", 'black');
+        var x1 = ((radius + thOpts.boxSize) * Math.cos(angle)) + thOpts.boxSize / 2;
+        var y1 = ((radius + thOpts.boxSize) * Math.sin(angle)) + thOpts.boxSize / 2;
+        d3.select(".c3-chart-arcs").append("rect")
+          .attr({
+            width: thOpts.boxSize,
+            height: thOpts.boxSize,
+            x: -x1,
+            y: -y1
+          })
+          .attr('class', 'myrect')
+          .style("fill", thOpts.boxFill ? col : "none")
+          .style("stroke-width", thOpts.strokeWidth)
+          .style("stroke", col);
+        var txtSize = measure(v, "mytxt");
+        var x1 = ((radius + thOpts.boxSize) * Math.cos(angle)) + txtSize.width / 2;
+        var y1 = ((radius + thOpts.boxSize) * Math.sin(angle)) + txtSize.height / 2 + 4;
+        d3.select(".c3-chart-arcs").append("text")
+          .attr({
+            x: -x1,
+            y: -y1
+          })
+          .attr('class', 'mytxt')
+          .text(v);
+      }
+    }
+    setTimeout(function () {
+      chart.load({
+        columns: [
+          ['data', 10]
+        ]
+      });
+    }, 1000);
+    setTimeout(function () {
+      chart.load({
+        columns: [
+          ['data', 50]
+        ]
+      });
+    }, 2000);
+    setTimeout(function () {
+      chart.load({
+        columns: [
+          ['data', 90]
+        ]
+      });
+    }, 3000);
+    function measure(text, classname) {
+      if (!text || text.length === 0) return {
+        height: 0,
+        width: 0
+      };
+      var container = d3.select('body').append('svg').attr('class', classname);
+      container.append('text').attr({
+        x: -1000,
+        y: -1000
+      }).text(text);
+      var bbox = container.node().getBBox();
+      container.remove();
+      return {
+        height: bbox.height,
+        width: bbox.width
+      };
+    }
+  </script>
+</body>
+
+</html>
