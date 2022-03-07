@@ -76,10 +76,10 @@
 		<div class="power-gauge" data-value="20" data-ticks="[30, 75]" data-target="75"></div>
 		<span class="text-muted"></span>
 	</div>
-	<div class="gauge-container">
+	<!-- <div class="gauge-container">
 		<div class="power-gauge" data-value="30" data-ticks="[30, 60]" data-target="45"></div>
 		<span class="text-muted"></span>
-	</div>
+	</div> -->
 	<script>
 		const gauge = function (container, configuration) {
 			const that = {};
@@ -191,38 +191,45 @@
 				svg.call(tip);
 
 				const centerTx = centerTranslation();
-
-				const arcs = svg.append('g')
+				const arcs = svg
+					.append('g')
 					.attr('class', 'arc')
 					.attr('transform', centerTx);
-
 				arcs.selectAll('path')
 					.data(function (d) {
 						const ticks = JSON.parse(d.ticks);
 						return d3.pairs(ticks.concat(config.minValue, config.maxValue).sort(d3.ascending));
 					})
-					.enter().append('path')
+					.enter()
+					.append('path')
 					.attr('fill', function (d, i) {
 						return config.arcColorFn(i);
 					})
 					.attr('d', arc);
 
+				// CREATING GAUGE NUMERIC POINTS
 				const lg = svg.append('g')
 					.attr('class', 'label')
 					.attr('transform', centerTx);
-
 				lg.selectAll('text')
 					.data(function (d) {
+						console.log('d: ', d);
 						return JSON.parse(d.ticks);
 					})
-					.enter().append('text')
+					.enter()
+					.append('text')
 					.attr('transform', function (d) {
+						console.log('d: ', d);
 						const ratio = scale(d);
 						const newAngle = config.minAngle + (ratio * range);
-						return 'rotate(' + newAngle + ') translate(0,' + (config.labelInset - r) + ')';
+						return `rotate(${newAngle}) translate(0,${config.labelInset - r})`;
 					})
 					.text(config.labelFormat);
 
+
+
+
+				// CREATING POINTER LINE
 				const lineData = [
 					[config.pointerWidth / 2, 0],
 					[0, -pointerHeadLength],
@@ -230,26 +237,20 @@
 					[0, config.pointerTailLength],
 					[config.pointerWidth / 2, 0]
 				];
-
 				const targetData = [
 					[0, config.labelInset - r],
 					[-config.pointerWidth / 2, config.labelInset - r - (config.pointerWidth / 2)],
 					[config.pointerWidth / 2, config.labelInset - r - (config.pointerWidth / 2)]
 				];
-
-
 				const pointerLine = d3.line().curve(d3.curveMonotoneX);
-
 				const pg = svg.append('g')
 					.attr('class', 'pointer')
 					.attr('transform', centerTx);
-
 				pointer = pg.append('path')
 					.attr('d', pointerLine(lineData)/*function(d) { return pointerLine(d) +'Z';}*/)
 					.attr('transform', 'rotate(' + config.minAngle + ')')
 					.on('mouseover', tip.show)
 					.on('mouseout', tip.hide);
-
 				pg.append('path')
 					.attr("class", "target")
 					.attr('d', pointerLine(targetData)/*function(d) { return pointerLine(d) +'Z';}*/)
